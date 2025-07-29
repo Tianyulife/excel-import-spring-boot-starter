@@ -14,6 +14,24 @@ MultiSegment Excel Import Starter 是一个基于 Hutool SAX 方式实现的高�
 - 轻量无侵入，适配 Spring Boot 生态
 - 兼容 Excel 2003/2007+ 格式
 
+
+MultiSegment Excel Import Starter is a high-performance, multi-segment Excel asynchronous import framework based on Hutool's SAX parsing approach.
+It supports defining independent headers, data segments, and processing logic for different parts of an Excel file, making it highly adaptable to complex import scenarios.
+
+Key Features:
+
+- Multi-segment import with independent header rows
+
+- Annotation-based field mapping and validation
+
+- Supports batch processing to reduce database interactions
+
+- Lightweight and non-intrusive, fully compatible with Spring Boot ecosystem
+
+- Supports Excel 2003 and 2007+ formats
+
+
+
 ## 开源协议
 
 本项目采用 Apache License 2.0 许可证，详情请见 [LICENSE](LICENSE) 文件。
