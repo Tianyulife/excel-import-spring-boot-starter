@@ -48,7 +48,7 @@ public class ExcelImportServiceTest {
         List<SegmentInfo<?>> segments = new ArrayList<>();
         segments.add(segment);
         segments.add(statementDetailSegmentInfo);
-        File file = new File("C:\\Users\\12092\\Downloads\\DAILY_JZ_3089991893100AY_20250718.xlsx");
+        File file = new File("C:\\Users\\12092\\Downloads\\123.xlsx");
         multiSegmentExcelSaxProcessor.process(file, -1, segments);
     }
 
