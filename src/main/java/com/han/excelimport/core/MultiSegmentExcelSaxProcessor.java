@@ -1,6 +1,7 @@
 package com.han.excelimport.core;
 
 import cn.hutool.poi.excel.ExcelUtil;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.*;
@@ -12,10 +13,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * @Date: 2025/7/23 14:26
  * @Description: com.ruoyi.common.core.utils.poi
  */
+@Component
 public class MultiSegmentExcelSaxProcessor {
 
 
-    public static <T> List<T> getTypedData(Map<SegmentInfo<?>, List<Object>> resultMap, SegmentInfo<T> segment) {
+    public  <T> List<T> getTypedData(Map<SegmentInfo<?>, List<Object>> resultMap, SegmentInfo<T> segment) {
         @SuppressWarnings("unchecked")
         List<T> typedList = (List<T>) resultMap.get(segment);
         return typedList;
@@ -29,7 +31,7 @@ public class MultiSegmentExcelSaxProcessor {
      * @param segments    段落定义列表
      *
      */
-    public static Map<SegmentInfo<?>, List<Object>> process(File file, int sheetIndex, List<SegmentInfo<?>> segments) {
+    public  Map<SegmentInfo<?>, List<Object>> process(File file, int sheetIndex, List<SegmentInfo<?>> segments) {
         Map<SegmentInfo<?>, List<Object>> segmentSuccessData = new LinkedHashMap<>();
         Map<SegmentInfo<?>, Map<Integer, String>> segmentHeaderMaps = new LinkedHashMap<>();
 
