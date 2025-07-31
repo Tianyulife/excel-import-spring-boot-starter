@@ -4,13 +4,43 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.han.excelimport</groupId>
-    <artifactId>multi-segment-excel-import-spring-boot-starter</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
+    <groupId>io.github.tianyulife</groupId>
+    <artifactId>excel-import-spring-boot-starter</artifactId>
+    <version>1.0.0</version>
     <name>MultiSegment Excel Import Starter</name>
     <description>Support multi-segment Excel import using SAX and annotation-driven handler</description>
+    <url>https://github.com/Tianyulife/${project.artifactId}</url>
+    <packaging>jar</packaging>
+
+    <!-- 协议信息标签，必须要有 -->
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!-- 开发人员信息，必须要有，改成你自己的，developer 可以配置多个 -->
+    <developers>
+        <developer>
+            <name>tianyulife</name>
+            <email>tianyulife03@gmail.com</email>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+
+    <!-- 仓库信息，必须要有，改成你自己的 -->
+    <scm>
+        <url>https://github.com/Tianyulife/${project.artifactId}</url>
+    </scm>
+    <!-- issue管理配置，改成你自己的 -->
+    <!-- 可以使用 <issueManagement/> 闭合标签，表示忽略该项配置，该标签必须要有，不能删除 -->
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/Tianyulife/${project.artifactId}/issues</url>
+    </issueManagement>
+
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -18,6 +48,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.boot.version>2.7.18</spring.boot.version>
         <lombok.version>1.18.30</lombok.version>
+        <!-- project dependency plugin version -->
+        <apache-maven-plugins.groupId>org.apache.maven.plugins</apache-maven-plugins.groupId>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+        <license-maven-plugin.version>5.0.0</license-maven-plugin.version>
+        <central-publishing-maven-plugin.version>0.7.0</central-publishing-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -81,15 +119,125 @@
     <build>
         <plugins>
             <!-- Maven Compiler Plugin -->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                <version>3.11.0</version>-->
+<!--                <configuration>-->
+<!--                    <source>${maven.compiler.source}</source>-->
+<!--                    <target>${maven.compiler.target}</target>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
+            <!-- 编译插件，插件是必须的 -->
+            <!-- compiler plugin -->
+            <!-- https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>${apache-maven-plugins.groupId}</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>${spring.boot.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
+
+            <!-- jar源码包生成插件，插件是必须的 -->
+            <!-- build source package plugin -->
+            <!-- https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
+            <plugin>
+                <groupId>${apache-maven-plugins.groupId}</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven-source-plugin.version}</version>
+                <configuration>
+                    <!-- 源码包随着项目打成的jar包安装到本地仓库或者私服、公服 -->
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- javadoc生成插件，插件是必须的 -->
+            <!-- gen javadoc plugin -->
+            <!-- https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-javadoc-plugin -->
+            <plugin>
+                <groupId>${apache-maven-plugins.groupId}</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- 禁用严格语法检测 -->
+                    <doclint>none</doclint>
+                </configuration>
+            </plugin>
+
+            <!-- GPG签名插件，插件是必须的 -->
+            <!-- gpg sign plugin -->
+            <!-- https://central.sonatype.com/artifact/org.apache.maven.plugins/maven-gpg-plugin -->
+            <plugin>
+                <groupId>${apache-maven-plugins.groupId}</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven-gpg-plugin.version}</version>
+                <configuration>
+                    <gpgArguments>
+                        <arg>--pinentry-mode</arg>
+                        <arg>loopback</arg>
+                    </gpgArguments>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 发布到maven仓库中心插件，插件是必须的 -->
+            <!-- publishing to central server plugin -->
+            <!-- https://central.sonatype.com/artifact/org.sonatype.central/central-publishing-maven-plugin -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>${central-publishing-maven-plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- 注意：这类必须要和Maven配置环境中的server id对应上 -->
+                    <publishingServerId>tianyulife</publishingServerId>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 </project>

@@ -42,9 +42,9 @@ Key Features:
 
 ```xml
 <dependency>
-  <groupId>com.han.excelimport</groupId>
-  <artifactId>multi-segment-excel-import-spring-boot-starter</artifactId>
-  <version>1.0.0</version>
+    <groupId>io.github.tianyulife</groupId>
+    <artifactId>excel-import-spring-boot-starter</artifactId>
+    <version>1.0.0</version>
 </dependency>
 ```
 

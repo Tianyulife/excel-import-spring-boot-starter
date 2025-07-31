@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.han.excelimport.autoconfig.ExcelImportAutoConfiguration
+io.github.tianyulife.excelimport.autoconfig.ExcelImportAutoConfiguration
