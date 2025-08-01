@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-io.github.tianyulife.excelimport.autoconfig.ExcelImportAutoConfiguration
+io.github.tianyulife.excelimport.autoconfig.ExcelImportAutoConfiguration,\
+io.github.tianyulife.excelimport.threadpool.ExecutorAutoConfiguration,\
+io.github.tianyulife.excelimport.autoconfig.TransactionExecutorAutoConfiguration

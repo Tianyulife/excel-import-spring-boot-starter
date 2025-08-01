@@ -35,10 +35,10 @@ public interface FileImportHandler<T> {
     /**
      * 简化版本，仅使用字段名
      */
-    default RowHandleResult<T> handleRow(Map<String, Object> row) {
-        // 为了兼容旧逻辑，构造一个空的 indexRow
-        return handleRow(row, Collections.emptyMap());
-    }
+//    default RowHandleResult<T> handleRow(Map<String, Object> row) {
+//        // 为了兼容旧逻辑，构造一个空的 indexRow
+//        return handleRow(row, Collections.emptyMap());
+//    }
 
 
     default RowHandleResult<T> handleRow(Map<String, Object> row, Map<Integer, Object> indexRow) {
@@ -71,8 +71,8 @@ public interface FileImportHandler<T> {
                     }
 
                     // 2. 如果 name 不存在，则尝试通过 index 获取
-                    if (value == null && excelAnnotation.index() >= 0) {
-                        value = indexRow.get(excelAnnotation.index());
+                    if (value == null && excelAnnotation.index() > 0) {
+                        value = indexRow.get(excelAnnotation.index()-1);
                     }
 
                     // 赋值或默认值

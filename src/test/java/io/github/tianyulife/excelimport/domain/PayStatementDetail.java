@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.github.tianyulife.excelimport.annotation.Excel;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
+
+import javax.validation.constraints.DecimalMax;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -89,6 +91,7 @@ public class PayStatementDetail implements Serializable {
     /** 交易金额（元） */
 
     @Excel(name = "交易金额",defaultValue = "0")
+    @DecimalMax(value = "5000", inclusive = true, message = "交易金额不能大于5000")
     private BigDecimal tradeAmount;
 
     /** 优惠金额（元） */

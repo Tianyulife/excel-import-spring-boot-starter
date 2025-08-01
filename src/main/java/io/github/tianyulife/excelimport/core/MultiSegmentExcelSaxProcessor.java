@@ -1,11 +1,15 @@
 package io.github.tianyulife.excelimport.core;
 
+import cn.hutool.core.lang.UUID;
 import cn.hutool.poi.excel.ExcelUtil;
+import io.github.tianyulife.excelimport.constant.FileConstant;
+import io.github.tianyulife.excelimport.util.CsvWriteUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,14 +37,18 @@ public class MultiSegmentExcelSaxProcessor {
      * @param segments    段落定义列表
      *
      */
-    public  Map<SegmentInfo<?>, List<Object>> process(File file, int sheetIndex, List<SegmentInfo<?>> segments) {
+    public  ImportResult<Map<SegmentInfo<?>, List<Object>>> process(File file, int sheetIndex, List<SegmentInfo<?>> segments) {
         Map<SegmentInfo<?>, List<Object>> segmentSuccessData = new LinkedHashMap<>();
         Map<SegmentInfo<?>, Map<Integer, String>> segmentHeaderMaps = new LinkedHashMap<>();
+
+        // 用于收集失败行，List 中每个元素是失败行的字段值列表，末尾额外加一列失败原因
+        Map<SegmentInfo<?>, List<List<String>>> segmentFailData = new LinkedHashMap<>();
 
         // 初始化缓存结构
         for (SegmentInfo<?> segment : segments) {
             segmentSuccessData.put(segment, new ArrayList<>());
             segmentHeaderMaps.put(segment, new HashMap<>());
+            segmentFailData.put(segment, new ArrayList<>());
         }
         AtomicLong endRow = new AtomicLong();
         ExcelUtil.readBySax(file, sheetIndex, (sheet, rowIndexZeroBased, rowList) -> {
@@ -88,11 +96,23 @@ public class MultiSegmentExcelSaxProcessor {
                         segmentSuccessData.get(segment).add(res.getRecord());
                     } else {
                        log.error("行 {} 处理失败：{}\n", rowNum, res.getErrorMsg());
+
+                        // 收集失败数据，转换成字符串列表，末尾追加错误信息
+                        List<String> failRow = new ArrayList<>();
+                        for (int i = 0; i < rowList.size(); i++) {
+                            failRow.add(rowList.get(i) == null ? "" : rowList.get(i).toString());
+                        }
+                        failRow.add(res.getErrorMsg());
+                        segmentFailData.get(segment).add(failRow);
                     }
                     break;
                 }
             }
         });
+
+        String errFileName = UUID.randomUUID().toString();
+        AtomicBoolean titleWritten = new AtomicBoolean(false);
+
 
         for (SegmentInfo<?> segment : segments) {
             List<Object> dataList = segmentSuccessData.get(segment);
@@ -104,10 +124,45 @@ public class MultiSegmentExcelSaxProcessor {
                 @SuppressWarnings("unchecked")
                 FileImportHandler<Object> handler = (FileImportHandler<Object>) segment.getHandler();
                 handler.batchProcess(dataList);
+
+                List<List<String>> failRows = segmentFailData.get(segment);
+                if (!failRows.isEmpty()){
+                    Map<Integer, String> headerMap = segmentHeaderMaps.get(segment);
+                    List<String> headers = new ArrayList<>();
+                    // 按列序号排序，取标题
+                    int maxCol = headerMap.keySet().stream().max(Integer::compareTo).orElse(-1);
+                    for (int i = 0; i <= maxCol; i++) {
+                        headers.add(headerMap.getOrDefault(i, "列" + i));
+                    }
+                    headers.add("错误原因");
+                    CsvWriteUtils.writeSingleDataToCsv(headers, errFileName, true, titleWritten.compareAndSet(false, true));
+                    CsvWriteUtils.writeDataToCsv(failRows,errFileName,true, false);
+                }
             }
         }
 
-        return segmentSuccessData;
+        long totalSuccess = segmentSuccessData.values().stream()
+                .mapToLong(List::size)
+                .sum();
+
+        long totalFail = segmentFailData.values().stream()
+                .mapToLong(List::size)
+                .sum();
+
+        log.info("导入结果：成功 {} 条，失败 {} 条", totalSuccess, totalFail);
+
+        ImportResult<Map<SegmentInfo<?>, List<Object>>> mapImportResult = new ImportResult<>();
+        if (totalFail == 0){
+            mapImportResult.setSuccess(true);
+        } else {
+            mapImportResult.setSuccess(false);
+            mapImportResult.setFailFile(new File(System.getProperty("user.dir"), errFileName + FileConstant.CSV_SUFFIX_CSV));
+        }
+        mapImportResult.setSuccessCount(totalSuccess);
+        mapImportResult.setFailCount(totalFail);
+        mapImportResult.setSuccessData(segmentSuccessData);
+
+        return mapImportResult;
     }
 
 }

@@ -1,8 +1,7 @@
 package io.github.tianyulife.excelimport;
 
-import io.github.tianyulife.excelimport.core.FileImportHandler;
-import io.github.tianyulife.excelimport.core.MultiSegmentExcelSaxProcessor;
-import io.github.tianyulife.excelimport.core.SegmentInfo;
+import io.github.tianyulife.excelimport.core.*;
+import io.github.tianyulife.excelimport.domain.DemoExcelData;
 import io.github.tianyulife.excelimport.domain.PayStatementDetail;
 import io.github.tianyulife.excelimport.domain.TransactionSummary;
 import io.github.tianyulife.excelimport.notify.WeChatRobotService;
@@ -16,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @version 1.0
@@ -30,6 +30,31 @@ public class ExcelImportServiceTest {
     private MultiSegmentExcelSaxProcessor multiSegmentExcelSaxProcessor;
     @Autowired(required = false)
     private WeChatRobotService weChatRobotService;
+    @Autowired
+    private ExcelFileImportProcessor excelFileImportProcessor;
+
+    @Test
+    public void testMultiThreadImport()  {
+        ImportResult<Void> voidImportResult = excelFileImportProcessor.importFile(new File("D:\\YCJK\\multi-segment-excel-import-spring-boot-starter\\src\\test\\resources\\demo_excel_data.xlsx"), new FileImportHandler<DemoExcelData>() {
+            /**
+             * 批量处理数据，成功的记录 每批次只进行一次和数据库交互操作
+             *
+             * @param records 成功的记录列表
+             */
+            @Override
+            public void batchProcess(List<DemoExcelData> records) {
+                records.forEach(System.out::println);
+            }
+        });
+        if (voidImportResult.isSuccess()) {
+            System.out.println("全部成功");
+        }
+        else {
+            System.out.println("失败条数:" + voidImportResult.getFailCount());
+            System.out.println("成功条数" + voidImportResult.getSuccessCount());
+            System.out.println("失败的文件路径: " + voidImportResult.getFailFile().getAbsolutePath());
+        }
+    }
 
     @Test
     public void testImport(){
@@ -54,7 +79,17 @@ public class ExcelImportServiceTest {
         segments.add(segment);
         segments.add(statementDetailSegmentInfo);
         File file = new File("C:\\Users\\12092\\Downloads\\123.xlsx");
-        multiSegmentExcelSaxProcessor.process(file, -1, segments);
+        ImportResult<Map<SegmentInfo<?>, List<Object>>> process = multiSegmentExcelSaxProcessor.process(file, -1, segments);
+
+        if (process.isSuccess()) {
+            System.out.println("全部成功");
+        }
+        else {
+            System.out.println("失败条数:" + process.getFailCount());
+            System.out.println("成功条数" + process.getSuccessCount());
+            System.out.println("失败的文件路径: " + process.getFailFile().getAbsolutePath());
+        }
+
     }
     @Test
     public void testWechatRobot(){
