@@ -1,6 +1,7 @@
 package io.github.tianyulife.excelimport.core;
 
 import cn.hutool.poi.excel.ExcelUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @Description: com.ruoyi.common.core.utils.poi
  */
 @Component
+@Slf4j
 public class MultiSegmentExcelSaxProcessor {
 
 
@@ -59,7 +61,7 @@ public class MultiSegmentExcelSaxProcessor {
                 if (rowNum >= segment.getStartRow() && (rowNum <= segment.getEndRow() || segment.getEndRow() < 0)) {
                     Map<Integer, String> headerMap = segmentHeaderMaps.get(segment);
                     if (headerMap.isEmpty()) {
-                        System.err.printf("第%d行读取数据，但段 [%s] 的标题（行 %d）尚未读取到！\n",
+                       log.error("第{}行读取数据，但段 {} 的标题（行 {}）尚未读取到！\n",
                                 rowNum,
                                 segment.getHandler().getClass().getSimpleName(),
                                 segment.getHeaderRow()
@@ -85,7 +87,7 @@ public class MultiSegmentExcelSaxProcessor {
                     if (res.isSuccess()) {
                         segmentSuccessData.get(segment).add(res.getRecord());
                     } else {
-                        System.err.printf("行 %d 处理失败：%s\n", rowNum, res.getErrorMsg());
+                       log.error("行 {} 处理失败：{}\n", rowNum, res.getErrorMsg());
                     }
                     break;
                 }
@@ -96,7 +98,7 @@ public class MultiSegmentExcelSaxProcessor {
             List<Object> dataList = segmentSuccessData.get(segment);
             if (!dataList.isEmpty()) {
                 long end = segment.getEndRow() == -1 ? endRow.get() : segment.getEndRow();
-                System.out.printf("处理段 [行%d-%d] 共 %d 条数据\n",
+                log.info("处理段 [行{}-{}] 共 {} 条数据\n",
                         segment.getStartRow(),end , dataList.size());
 
                 @SuppressWarnings("unchecked")

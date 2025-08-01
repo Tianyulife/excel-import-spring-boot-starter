@@ -48,6 +48,18 @@ Key Features:
 </dependency>
 ```
 
+## 示例代码
+
+完整使用示例请查看：
+
+📁 [ExcelImportServiceTest.java](https://github.com/Tianyulife/excel-import-spring-boot-starter/blob/main/excel-import-spring-boot-starter-core/src/test/java/io/github/tianyulife/excelimport/ExcelImportServiceTest.java)
+
+示例包括：
+- 如何定义 Excel 映射注解类（TestModel）
+- 如何调用 `importExcel(...)` 方法
+- 如何处理导入结果
+
+
 ## 重大更新
 
 ### 新增企业微信群机器人
