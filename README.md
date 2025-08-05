@@ -57,9 +57,92 @@ For more details, please refer to the [LICENSE](LICENSE) file.
 
 ## 示例代码
 
+```java
+@SpringBootTest(classes = TestConfig.class)
+@ExtendWith(SpringExtension.class)
+public class ExcelImportServiceTest {
+    @Autowired
+    private MultiSegmentExcelSaxProcessor multiSegmentExcelSaxProcessor;
+    @Autowired(required = false)
+    private WeChatRobotService weChatRobotService;
+    @Autowired
+    private ExcelFileImportProcessor excelFileImportProcessor;
+
+    @Test
+    public void testMultiThreadImport()  {
+        ImportResult<Void> voidImportResult = excelFileImportProcessor.importFile(new File("D:\\YCJK\\multi-segment-excel-import-spring-boot-starter\\src\\test\\resources\\demo_excel_data.xlsx"), new FileImportHandler<DemoExcelData>() {
+            /**
+             * 批量处理数据，成功的记录 每批次只进行一次和数据库交互操作
+             *
+             * @param records 成功的记录列表
+             */
+            @Override
+            public void batchProcess(List<DemoExcelData> records) {
+                records.forEach(System.out::println);
+            }
+        });
+        if (voidImportResult.isSuccess()) {
+            System.out.println("全部成功");
+        }
+        else {
+            System.out.println("失败条数:" + voidImportResult.getFailCount());
+            System.out.println("成功条数" + voidImportResult.getSuccessCount());
+            System.out.println("失败的文件路径: " + voidImportResult.getFailFile().getAbsolutePath());
+        }
+    }
+
+    @Test
+    public void testImport(){
+        SegmentInfo<TransactionSummary> segment = new SegmentInfo<>(
+                new FileImportHandler<TransactionSummary>() {
+                    @Override
+                    public void batchProcess(List<TransactionSummary> records) {
+                        records.forEach(System.out::println);
+                    }
+                }, 8, 9, 11
+        );
+        SegmentInfo<PayStatementDetail> statementDetailSegmentInfo = new SegmentInfo<>(
+                new FileImportHandler<PayStatementDetail>() {
+                    @Override
+                    public void batchProcess(List<PayStatementDetail> records) {
+                        records.forEach(System.out::println);
+                    }
+                }, 14, 15, -1
+        );
+
+        List<SegmentInfo<?>> segments = new ArrayList<>();
+        segments.add(segment);
+        segments.add(statementDetailSegmentInfo);
+        File file = new File("C:\\Users\\12092\\Downloads\\123.xlsx");
+        ImportResult<Map<SegmentInfo<?>, List<Object>>> process = multiSegmentExcelSaxProcessor.process(file, -1, segments);
+
+        if (process.isSuccess()) {
+            System.out.println("全部成功");
+        }
+        else {
+            System.out.println("失败条数:" + process.getFailCount());
+            System.out.println("成功条数" + process.getSuccessCount());
+            System.out.println("失败的文件路径: " + process.getFailFile().getAbsolutePath());
+        }
+
+    }
+    @Test
+    public void testWechatRobot(){
+        WeChatRobotService.SendResult sendResult = weChatRobotService.sendTextToAll("可以收到吗?");
+        if(sendResult.isSuccess()){
+            System.out.println("应该是收到了");
+        }
+    }
+
+
+
+}
+```
+
 **完整使用示例请查看:**
 
-📁 [ExcelImportServiceTest.java](https://github.com/Tianyulife/excel-import-spring-boot-starter/blob/main/excel-import-spring-boot-starter-core/src/test/java/io/github/tianyulife/excelimport/ExcelImportServiceTest.java)
+
+📁 [excelimport](https://github.com/Tianyulife/excel-import-spring-boot-starter/tree/main/src/test/java/io/github/tianyulife/excelimport)
 
 示例包括：
 - 如何定义 Excel 映射注解类（TestModel）
@@ -69,7 +152,7 @@ For more details, please refer to the [LICENSE](LICENSE) file.
 ## 🔍 Example Usage
 **For a complete usage example, see:**
 
-📁 [ExcelImportServiceTest.java](https://github.com/Tianyulife/excel-import-spring-boot-starter/blob/main/excel-import-spring-boot-starter-core/src/test/java/io/github/tianyulife/excelimport/ExcelImportServiceTest.java)
+📁 [excelimport](https://github.com/Tianyulife/excel-import-spring-boot-starter/tree/main/src/test/java/io/github/tianyulife/excelimport)
 
 The example demonstrates:
 
