@@ -65,16 +65,19 @@ public interface FileImportHandler<T> {
                     field.setAccessible(true);
                     Object value = null;
 
-                    // 1. 优先通过 name 获取
-                    if (!excelAnnotation.name().isEmpty()) {
+
+                    // 1. 优先通过 index 获取
+                    if (excelAnnotation.index() > 0) {
+                        int idx = excelAnnotation.index() - 1;
+                        if (idx < indexRow.size()) {
+                            value = indexRow.get(idx);
+                        }
+                    }
+
+                    // 2. 如果 index 获取不到，再尝试通过 name 获取
+                    if (value == null && !excelAnnotation.name().isEmpty()) {
                         value = row.get(excelAnnotation.name());
                     }
-
-                    // 2. 如果 name 不存在，则尝试通过 index 获取
-                    if (value == null && excelAnnotation.index() > 0) {
-                        value = indexRow.get(excelAnnotation.index()-1);
-                    }
-
                     // 赋值或默认值
                     if (value != null) {
                         Object convertedValue = convertValue(field.getType(), value, excelAnnotation);
