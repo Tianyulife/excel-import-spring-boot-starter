@@ -41,7 +41,7 @@ public class ExcelFileImportProcessor {
     private static final int NUM_PER_PROCESS = 2000;
 
     @Async
-    public <T> ImportResult<Void> importFile(File tempFile, FileImportHandler<T> handler){
+    public <T> CompletableFuture<ImportResult<Void>> importFile(File tempFile, FileImportHandler<T> handler){
 
         AtomicLong rows = new AtomicLong();
         AtomicLong fails = new AtomicLong();
@@ -113,7 +113,7 @@ public class ExcelFileImportProcessor {
         }
         importResult.setSuccessCount(successNum.get());
         importResult.setFailCount(fails.get());
-        return importResult;
+        return CompletableFuture.completedFuture(importResult);
     }
 
     private <T> CompletableFuture<Void> submitBatch(

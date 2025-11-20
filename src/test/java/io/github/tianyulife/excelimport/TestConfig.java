@@ -21,4 +21,5 @@ public class TestConfig {
     public Validator validator() {
         return Validation.buildDefaultValidatorFactory().getValidator();
     }
+
 }
