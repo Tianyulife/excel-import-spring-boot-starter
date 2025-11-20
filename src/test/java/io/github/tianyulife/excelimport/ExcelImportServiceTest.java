@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @version 1.0
@@ -28,14 +29,14 @@ import java.util.Map;
 public class ExcelImportServiceTest {
     @Autowired
     private MultiSegmentExcelSaxProcessor multiSegmentExcelSaxProcessor;
-    @Autowired(required = false)
-    private WeChatRobotService weChatRobotService;
+//    @Autowired(required = false)
+//    private WeChatRobotService weChatRobotService;
     @Autowired
     private ExcelFileImportProcessor excelFileImportProcessor;
 
     @Test
     public void testMultiThreadImport()  {
-        ImportResult<Void> voidImportResult = excelFileImportProcessor.importFile(new File("D:\\YCJK\\multi-segment-excel-import-spring-boot-starter\\src\\test\\resources\\demo_excel_data.xlsx"), new FileImportHandler<DemoExcelData>() {
+         excelFileImportProcessor.importFile(new File("D:\\YCJK\\multi-segment-excel-import-spring-boot-starter\\src\\test\\resources\\demo_excel_data.xlsx"), new FileImportHandler<DemoExcelData>() {
             /**
              * 批量处理数据，成功的记录 每批次只进行一次和数据库交互操作
              *
@@ -45,15 +46,18 @@ public class ExcelImportServiceTest {
             public void batchProcess(List<DemoExcelData> records) {
                 records.forEach(System.out::println);
             }
-        });
-        if (voidImportResult.isSuccess()) {
-            System.out.println("全部成功");
-        }
-        else {
-            System.out.println("失败条数:" + voidImportResult.getFailCount());
-            System.out.println("成功条数" + voidImportResult.getSuccessCount());
-            System.out.println("失败的文件路径: " + voidImportResult.getFailFile().getAbsolutePath());
-        }
+        }).thenAccept(importResult -> {
+             if (importResult.isSuccess()) {
+                 System.out.println("全部成功");
+             } else {
+                 System.out.println("失败条数: " + importResult.getFailCount());
+                 System.out.println("成功条数: " + importResult.getSuccessCount());
+                 if (importResult.getFailFile() != null) {
+                     System.out.println("失败的文件路径: " + importResult.getFailFile().getAbsolutePath());
+                 }
+             }
+         });
+
     }
 
     @Test
@@ -82,8 +86,7 @@ public class ExcelImportServiceTest {
         ImportResult<Map<SegmentInfo<?>, List<Object>>> process = multiSegmentExcelSaxProcessor.process(file, -1, segments);
 
         if (process.isSuccess()) {
-            System.out.println("全部成功");
-        }
+            System.out.println("全部成功");}
         else {
             System.out.println("失败条数:" + process.getFailCount());
             System.out.println("成功条数" + process.getSuccessCount());
@@ -91,13 +94,16 @@ public class ExcelImportServiceTest {
         }
 
     }
-    @Test
-    public void testWechatRobot(){
-        WeChatRobotService.SendResult sendResult = weChatRobotService.sendTextToAll("可以收到吗?");
-        if(sendResult.isSuccess()){
-            System.out.println("应该是收到了");
-        }
-    }
+//    @Test
+//    public void testWechatRobot(){
+//
+//        WeChatRobotService weChatRobotService = new WeChatRobotService("");
+//
+//        WeChatRobotService.SendResult sendResult = weChatRobotService.sendTextToAll("可以收到吗?");
+//        if(sendResult.isSuccess()){
+//            System.out.println("应该是收到了");
+//        }
+//    }
 
 
 
