@@ -124,8 +124,8 @@ public interface FileImportHandler<T> {
         if (excelAnnotation.handler() != null && !excelAnnotation.handler().equals(ExcelHandlerAdapter.class)) {
             try {
                 ExcelHandlerAdapter handler = (ExcelHandlerAdapter) excelAnnotation.handler().newInstance();
-                value = handler.format(value, excelAnnotation.args());
-                raw = String.valueOf(value).trim();
+                return handler.format(value, excelAnnotation.args());
+
             } catch (Exception e) {
                 throw new RuntimeException("Excel.handler 处理失败: " + excelAnnotation.handler().getSimpleName(), e);
             }
