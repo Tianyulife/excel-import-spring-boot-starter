@@ -7,9 +7,11 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.lang.management.ManagementFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 /**
@@ -147,12 +149,36 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
         }
     }
 
+
+
+
     public static LocalDateTime parseStringToLocalDateTime(String dateTimeString,String pattern) {
         // Define the pattern that matches the input string
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
         // Parse the string to LocalDateTime
         return LocalDateTime.parse(dateTimeString, formatter);
+    }
+
+    /**
+     * 将字符串解析为 LocalDate
+     *
+     * @param dateStr    待解析字符串
+     * @param pattern    日期格式，例如 "yyyy-MM-dd"
+     * @return LocalDate 对象，如果解析失败返回 null
+     */
+    public static LocalDate parseStringToLocalDate(String dateStr, String pattern) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            return LocalDate.parse(dateStr.trim(), formatter);
+        } catch (DateTimeParseException e) {
+            // 如果解析失败，可以打印日志或抛异常，根据需要调整
+            System.err.println("解析 LocalDate 失败，输入：" + dateStr + ", 格式：" + pattern);
+            return null;
+        }
     }
 
     public static Date parseLoaclDateTimeToDate(LocalDateTime localDateTime) {

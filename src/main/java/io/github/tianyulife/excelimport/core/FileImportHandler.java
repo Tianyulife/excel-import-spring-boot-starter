@@ -13,6 +13,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -132,6 +133,9 @@ public interface FileImportHandler<T> {
             return DateUtils.parseDate(value);
         }  else if (fieldType.equals(LocalDateTime.class)){
             return DateUtils.parseStringToLocalDateTime(value.toString(), excelAnnotation.dateFormat());
+        } else if (fieldType.equals(LocalDate.class)) {
+            // 如果 Excel 是 yyyy-MM-dd 格式
+            return DateUtils.parseStringToLocalDate(value.toString(), excelAnnotation.dateFormat());
         }
         else {
             return value;
