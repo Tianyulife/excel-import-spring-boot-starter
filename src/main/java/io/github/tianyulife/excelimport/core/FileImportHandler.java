@@ -130,9 +130,7 @@ public interface FileImportHandler<T> {
                 throw new RuntimeException("Excel.handler 处理失败: " + excelAnnotation.handler().getSimpleName(), e);
             }
         }
-
-
-
+        if (raw.isEmpty()) return null ;
         if (fieldType.equals(String.class)) {
             return raw;
         } else if (fieldType.equals(BigDecimal.class)) {
