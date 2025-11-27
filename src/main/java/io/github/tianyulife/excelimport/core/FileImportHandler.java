@@ -3,6 +3,7 @@ package io.github.tianyulife.excelimport.core;
 
 import io.github.tianyulife.excelimport.annotation.Excel;
 import io.github.tianyulife.excelimport.util.DateUtils;
+import io.github.tianyulife.excelimport.util.ExcelHandlerAdapter;
 import io.github.tianyulife.excelimport.util.SpringUtils;
 import io.github.tianyulife.excelimport.util.StringUtils;
 
@@ -110,35 +111,57 @@ public interface FileImportHandler<T> {
 
 
     static Object convertValue(Class<?> fieldType, Object value, Excel excelAnnotation) {
+
+        if (value == null) {
+            return null;
+        }
+
+        String raw = String.valueOf(value).trim();
+
+        // =============================
+// 1）优先执行 Excel.handler()
+// =============================
+        if (excelAnnotation.handler() != null && !excelAnnotation.handler().equals(ExcelHandlerAdapter.class)) {
+            try {
+                ExcelHandlerAdapter handler = (ExcelHandlerAdapter) excelAnnotation.handler().newInstance();
+                value = handler.format(value, excelAnnotation.args());
+                raw = String.valueOf(value).trim();
+            } catch (Exception e) {
+                throw new RuntimeException("Excel.handler 处理失败: " + excelAnnotation.handler().getSimpleName(), e);
+            }
+        }
+
+
+
         if (fieldType.equals(String.class)) {
-            return String.valueOf(value);
+            return raw;
         } else if (fieldType.equals(BigDecimal.class)) {
-            BigDecimal bigDecimal = new BigDecimal(String.valueOf(value));
+            BigDecimal bigDecimal = new BigDecimal(raw);
             if (excelAnnotation.scale() != -1) {
                 bigDecimal = bigDecimal.setScale(excelAnnotation.scale(), excelAnnotation.roundingMode());
             }
             return bigDecimal;
         } else if (fieldType.equals(Integer.class)) {
             // 先转BigDecimal，避免 "30.0" 解析失败
-            BigDecimal bd = new BigDecimal(String.valueOf(value));
+            BigDecimal bd = new BigDecimal(raw);
             return bd.setScale(0, RoundingMode.DOWN).intValueExact();
         } else if (fieldType.equals(Long.class)) {
-            BigDecimal bd = new BigDecimal(String.valueOf(value));
+            BigDecimal bd = new BigDecimal(raw);
             return bd.setScale(0, RoundingMode.DOWN).longValueExact();
         } else if (fieldType.equals(Double.class)) {
-            return Double.parseDouble(String.valueOf(value));
+            return Double.parseDouble(raw);
         } else if (fieldType.equals(Boolean.class)) {
-            return Boolean.parseBoolean(String.valueOf(value));
+            return Boolean.parseBoolean(raw);
         } else if (fieldType.equals(Date.class)) {
-            return DateUtils.parseDate(value);
+            return DateUtils.parseDate(raw);
         }  else if (fieldType.equals(LocalDateTime.class)){
-            return DateUtils.parseStringToLocalDateTime(value.toString(), excelAnnotation.dateFormat());
+            return DateUtils.parseStringToLocalDateTime(raw, excelAnnotation.dateFormat());
         } else if (fieldType.equals(LocalDate.class)) {
             // 如果 Excel 是 yyyy-MM-dd 格式
-            return DateUtils.parseStringToLocalDate(value.toString(), excelAnnotation.dateFormat());
+            return DateUtils.parseStringToLocalDate(raw, excelAnnotation.dateFormat());
         }
         else {
-            return value;
+            return raw;
         }
     }
 
