@@ -40,8 +40,12 @@ public class ExcelFileImportProcessor {
 
     private static final int NUM_PER_PROCESS = 2000;
 
+     public <T> CompletableFuture<ImportResult<Void>> importFile(File tempFile, FileImportHandler<T> handler){
+        return importFile(tempFile, handler, null);
+    }
+
     @Async
-    public <T> CompletableFuture<ImportResult<Void>> importFile(File tempFile, FileImportHandler<T> handler){
+    public <T> CompletableFuture<ImportResult<Void>> importFile(File tempFile, FileImportHandler<T> handler,ImportContext context){
 
         AtomicLong rows = new AtomicLong();
         AtomicLong fails = new AtomicLong();
@@ -76,7 +80,7 @@ public class ExcelFileImportProcessor {
 
                     if (successBuffer.size() >= NUM_PER_PROCESS) {
                         tasks.add(submitBatch(handler, successBuffer, rawBuffer, stringList.get(),
-                                titleList, titleWritten, errFileName, fails, successNum,failBuffer));
+                                titleList, titleWritten, errFileName, fails, successNum,failBuffer,context));
                         successBuffer.clear();
                         rawBuffer.clear();
                     }
@@ -92,7 +96,7 @@ public class ExcelFileImportProcessor {
         // 处理剩余成功数据
         if (!successBuffer.isEmpty()) {
             tasks.add(submitBatch(handler, successBuffer, rawBuffer, stringList.get(),
-                    titleList, titleWritten, errFileName, fails, successNum,failBuffer));
+                    titleList, titleWritten, errFileName, fails, successNum,failBuffer,context));
         }
 
 
@@ -126,7 +130,7 @@ public class ExcelFileImportProcessor {
             String errFileName,
             AtomicLong fails,
             AtomicLong successNum,
-            List<List<String>> failBuffer) {
+            List<List<String>> failBuffer,ImportContext context) {
 
         List<T> batchCopy = new ArrayList<>(batchList);
         List<Map<String, Object>> rawCopy = new ArrayList<>(rawData);
@@ -134,7 +138,7 @@ public class ExcelFileImportProcessor {
         return CompletableFuture.runAsync(() -> {
             try {
                 transactionExecutor.runInTransaction(() -> {
-                    handler.batchProcess(batchCopy);
+                    handler.batchProcess(batchCopy,context);
                 });
                 successNum.addAndGet(batchCopy.size());
                 log.info(" 批处理成功，累计成功记录数：{}", successNum.get());// 批处理成功后，统一加成功数

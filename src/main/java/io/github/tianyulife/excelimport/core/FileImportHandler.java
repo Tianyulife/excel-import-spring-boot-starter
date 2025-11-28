@@ -165,10 +165,13 @@ public interface FileImportHandler<T> {
 
 
 
-    /**
-     * 批量处理数据，成功的记录 每批次只进行一次和数据库交互操作
-     * @param records 成功的记录列表
-     */
 
-    void batchProcess(List<T> records);
+
+    // 新增：支持带 ImportContext 的 batchProcess
+    default void batchProcess(List<T> list, ImportContext ctx) {
+        batchProcess(list); // 自动兼容旧的 Handler
+    }
+
+    // 保留旧的 batchProcess
+     default void batchProcess(List<T> list) {}
 }

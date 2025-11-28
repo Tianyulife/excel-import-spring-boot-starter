@@ -37,7 +37,13 @@ public class MultiSegmentExcelSaxProcessor {
      * @param segments    段落定义列表
      *
      */
-    public  ImportResult<Map<SegmentInfo<?>, List<Object>>> process(File file, int sheetIndex, List<SegmentInfo<?>> segments) {
+
+    public  ImportResult<Map<SegmentInfo<?>, List<Object>>> process(File file, int sheetIndex, List<SegmentInfo<?>> segments){
+        return process(file, sheetIndex, segments, null);
+    }
+
+
+    public  ImportResult<Map<SegmentInfo<?>, List<Object>>> process(File file, int sheetIndex, List<SegmentInfo<?>> segments,ImportContext importContext) {
         Map<SegmentInfo<?>, List<Object>> segmentSuccessData = new LinkedHashMap<>();
         Map<SegmentInfo<?>, Map<Integer, String>> segmentHeaderMaps = new LinkedHashMap<>();
 
@@ -123,7 +129,7 @@ public class MultiSegmentExcelSaxProcessor {
 
                 @SuppressWarnings("unchecked")
                 FileImportHandler<Object> handler = (FileImportHandler<Object>) segment.getHandler();
-                handler.batchProcess(dataList);
+                handler.batchProcess(dataList,importContext);
 
                 List<List<String>> failRows = segmentFailData.get(segment);
                 if (!failRows.isEmpty()){
