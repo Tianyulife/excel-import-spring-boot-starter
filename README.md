@@ -70,7 +70,7 @@ public class ExcelImportServiceTest {
 
     @Test
     public void testMultiThreadImport()  {
-        ImportResult<Void> voidImportResult = excelFileImportProcessor.importFile(new File("D:\\YCJK\\multi-segment-excel-import-spring-boot-starter\\src\\test\\resources\\demo_excel_data.xlsx"), new FileImportHandler<DemoExcelData>() {
+        excelFileImportProcessor.importFile(new File("D:\\YCJK\\multi-segment-excel-import-spring-boot-starter\\src\\test\\resources\\demo_excel_data.xlsx"), new FileImportHandler<DemoExcelData>() {
             /**
              * 批量处理数据，成功的记录 每批次只进行一次和数据库交互操作
              *
@@ -80,15 +80,24 @@ public class ExcelImportServiceTest {
             public void batchProcess(List<DemoExcelData> records) {
                 records.forEach(System.out::println);
             }
+        }).thenAccept(importResult -> {
+            if (importResult.isSuccess()) {
+                System.out.println("全部成功");
+            } else {
+                System.out.println("失败条数: " + importResult.getFailCount());
+                System.out.println("成功条数: " + importResult.getSuccessCount());
+                if (importResult.getFailFile() != null) {
+                    System.out.println("失败的文件路径: " + importResult.getFailFile().getAbsolutePath());
+                }
+            }
+        }).exceptionally(ex -> {
+            System.err.println("Excel 导入异步失败");
+            return null;
+        }) .whenComplete((r, t) -> {
+            // 异步链最终完成时统一删除
+            System.out.println("全部完成");
         });
-        if (voidImportResult.isSuccess()) {
-            System.out.println("全部成功");
-        }
-        else {
-            System.out.println("失败条数:" + voidImportResult.getFailCount());
-            System.out.println("成功条数" + voidImportResult.getSuccessCount());
-            System.out.println("失败的文件路径: " + voidImportResult.getFailFile().getAbsolutePath());
-        }
+
     }
 
     @Test
