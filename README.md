@@ -242,6 +242,54 @@ A configurable TransactionExecutor is provided for executing import logic inside
 
 - Defined in: TransactionExecutorAutoConfiguration
 
+### 增加了自定义的数据处理逻辑
+
+@Excel 注解 增加  public Class<?> handler() default ExcelHandlerAdapter.class; 
+
+**示例代码**
+
+```java
+
+
+@Excel(name = "一些数字",index = 1,sort = 1,handler = BigDecimalCleanCommaHandler.class)
+
+public class BigDecimalCleanCommaHandler implements ExcelHandlerAdapter {
+
+    @Override
+    public Object format(Object value, String[] args) {
+        if (value == null) {
+            return null;
+        }
+
+        // 转字符串并去掉所有逗号
+        String raw = String.valueOf(value).trim().replace(",", "");
+
+        // 空字符串也要处理
+        if (raw.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return new BigDecimal(raw);
+        } catch (Exception e) {
+            throw new RuntimeException("BigDecimalCleanCommaHandler 处理失败，无法解析数字: " + raw);
+        }
+    }
+}
+```
+
+### 在多线程导入中增加了传递值容器
+
+****
+增加了方法 public <T> CompletableFuture<ImportResult<Void>> importFile(File tempFile, FileImportHandler<T> handler,ImportContext context) 增加了实现方法 public void batchProcess(List<ShareholderRelation> list, ImportContext context)现在可以二选一
+
+
+
+
+
+
+
+
 
 
 ### 新增企业微信群机器人
