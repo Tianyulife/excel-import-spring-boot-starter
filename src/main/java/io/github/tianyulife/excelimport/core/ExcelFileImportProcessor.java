@@ -3,6 +3,7 @@ package io.github.tianyulife.excelimport.core;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.poi.excel.ExcelUtil;
 import io.github.tianyulife.excelimport.constant.FileConstant;
+import io.github.tianyulife.excelimport.exception.ImportBizException;
 import io.github.tianyulife.excelimport.transaction.TransactionExecutor;
 import io.github.tianyulife.excelimport.util.CsvWriteUtils;
 import io.github.tianyulife.excelimport.util.StringUtils;
@@ -142,7 +143,38 @@ public class ExcelFileImportProcessor {
                 });
                 successNum.addAndGet(batchCopy.size());
                 log.info(" 批处理成功，累计成功记录数：{}", successNum.get());// 批处理成功后，统一加成功数
-            } catch (Exception e) {
+            } catch (ImportBizException bizEx) {
+
+                // 框架把当前的 rawCopy 传给异常，让异常返回要写失败的行
+                List<Map<String, Object>> failedRows;
+                try {
+                    failedRows = bizEx.processRawCopy(rawCopy);
+                } catch (Exception exInHandler) {
+                    // 万一 handler 在 processRawCopy 内抛异常，退回到默认策略（全部标记失败）
+                    log.error("processRawCopy 执行失败，回退为全部 rawCopy 失败：", exInHandler);
+                    String msg = StringUtils.substring(bizEx.getMessage(), 0, 200);
+                    for (Map<String, Object> row : rawCopy) {
+                        row.put("失败原因", msg);
+                    }
+                    failedRows = rawCopy;
+                }
+
+                if (failedRows != null && !failedRows.isEmpty()) {
+                    for (Map<String, Object> row : failedRows) {
+                        writeFailRow(row, headers, titleList, titleWritten, errFileName, failBuffer);
+                    }
+                    fails.addAndGet(rawCopy.size());
+                    synchronized (failBuffer) {
+                        if (failBuffer.size() >= NUM_PER_PROCESS) {
+                            CsvWriteUtils.writeDataToCsv(failBuffer, errFileName, true, false);
+                            failBuffer.clear();
+                        }
+                    }
+                }
+
+            }
+
+            catch (Exception e) {
                 log.error(" 批处理失败，记录未计入成功数，本批数据：{}", batchCopy, e);
                 log.error("批量处理异常: {}", batchCopy, e);
                 String errorMsg = StringUtils.substring(e.getMessage(), 0, 200);

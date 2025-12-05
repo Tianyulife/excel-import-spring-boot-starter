@@ -174,4 +174,7 @@ public interface FileImportHandler<T> {
 
     // 保留旧的 batchProcess
      default void batchProcess(List<T> list) {}
+
+
+
 }
