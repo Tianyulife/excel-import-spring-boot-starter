@@ -51,7 +51,7 @@ For more details, please refer to the [LICENSE](LICENSE) file.
 <dependency>
     <groupId>io.github.tianyulife</groupId>
     <artifactId>excel-import-spring-boot-starter</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 
