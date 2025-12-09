@@ -1,6 +1,7 @@
 package io.github.tianyulife.excelimport.core;
 
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import io.github.tianyulife.excelimport.constant.FileConstant;
 import io.github.tianyulife.excelimport.exception.ImportBizException;
@@ -63,6 +64,11 @@ public class ExcelFileImportProcessor {
         List<CompletableFuture<Void>> tasks = new ArrayList<>();
 
         ExcelUtil.readBySax(tempFile, 0, (sheetIndex, rowIndex, rowCells) -> {
+
+            if (rowCells == null || rowCells.stream().allMatch(cell -> cell == null || StrUtil.isBlank(StrUtil.toString(cell)))) {
+                return; // 跳过空行
+            }
+
             if (rowIndex == 0) {
                 stringList.set(rowCells.stream().map(Object::toString).collect(Collectors.toList()));
             } else {
