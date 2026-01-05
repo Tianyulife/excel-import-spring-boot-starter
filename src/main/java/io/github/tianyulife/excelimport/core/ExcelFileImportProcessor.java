@@ -74,10 +74,22 @@ public class ExcelFileImportProcessor {
             } else {
                 Map<String, Object> rowMap = new HashMap<>();
                 Map<Integer, Object> indexRowMap = new HashMap<>();
-                for (int i = 0; i < rowCells.size(); i++) {
-                    rowMap.put(stringList.get().get(i), rowCells.get(i));
-                    indexRowMap.put(i, rowCells.get(i));
+
+
+
+                for (int i = 0; i < stringList.get().size(); i++) {
+
+                    Object cell = (i < rowCells.size()) ? rowCells.get(i) : null;
+
+                    rowMap.put(stringList.get().get(i), cell);
+                    indexRowMap.put(i, cell);
                 }
+
+                if (rowCells.size() > stringList.get().size()) {
+                    log.warn("第 {} 行数据列数({})大于表头列数({})，多余数据将被忽略",
+                            rowIndex, rowCells.size(), stringList.get().size());
+                }
+
 
                 RowHandleResult<T> result = handler.handleRow(rowMap,indexRowMap);
 
