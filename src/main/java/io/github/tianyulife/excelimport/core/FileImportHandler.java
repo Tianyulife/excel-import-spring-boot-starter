@@ -77,7 +77,7 @@ public interface FileImportHandler<T> {
                     }
 
                     // 2. 如果 index 获取不到，再尝试通过 name 获取
-                    if (value == null && !excelAnnotation.name().isEmpty()) {
+                    else if (!excelAnnotation.name().isEmpty()) {
                         value = row.get(excelAnnotation.name());
                     }
                     // 赋值或默认值
